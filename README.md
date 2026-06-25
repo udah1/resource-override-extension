@@ -6,6 +6,8 @@ Redirect requests, mock responses (JSON/JS/CSS), modify response headers, inject
 
 > Originally created by **Annie Rosh** with **OpenAI**. · Maintained by **Yehuda Huri** ([@udah1](https://github.com/udah1)).
 
+> 🔒 Privacy: this extension collects no data and stores all rules locally. See [PRIVACY.md](PRIVACY.md).
+
 ---
 
 ## ✨ Features
