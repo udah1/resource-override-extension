@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Open Resource Override (MV3)",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "Redirect or mock requests (URL\u2192URL or URL\u2192text), modify headers, and inject JS/CSS. MV3-compatible alternative to Resource Override.",
   "permissions": [
     "declarativeNetRequest",
     "storage",
     "scripting",
-    "webNavigation",
     "tabs"
   ],
   "host_permissions": [
