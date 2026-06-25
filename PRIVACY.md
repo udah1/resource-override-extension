@@ -1,8 +1,8 @@
-# Privacy Policy — Open Resource Override
+# Privacy Policy — Resource Override Pro
 
 _Last updated: 2026-06-25_
 
-Open Resource Override ("the extension") is a developer tool that redirects, mocks, and
+Resource Override Pro ("the extension") is a developer tool that redirects, mocks, and
 modifies network requests and injects user-authored JavaScript/CSS into web pages you choose.
 
 ## Summary

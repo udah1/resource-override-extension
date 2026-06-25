@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.0]
+
+- Rename the extension to **Resource Override Pro** (manifest name, toolbar title,
+  options/popup headers, DevTools panel label, docs).
+
 ## [1.4.0]
 
 ### Service worker / DNR

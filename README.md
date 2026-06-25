@@ -1,5 +1,5 @@
 
-# Open Resource Override (MV3)
+# Resource Override Pro
 
 A modern, Manifest V3–compatible **Resource Override** extension for Chrome.  
 Redirect requests, mock responses (JSON/JS/CSS), modify response headers, inject JS/CSS, and control behavior per-rule with wildcards or regex — all with a clean, friendly UI.

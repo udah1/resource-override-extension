@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Open Resource Override (MV3)",
-  "version": "1.4.0",
+  "name": "Resource Override Pro",
+  "version": "1.5.0",
   "description": "Redirect or mock requests (URL\u2192URL or URL\u2192text), modify headers, and inject JS/CSS. MV3-compatible alternative to Resource Override.",
   "permissions": [
     "declarativeNetRequest",
@@ -14,7 +14,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open Resource Override"
+    "default_title": "Resource Override Pro"
   },
   "options_page": "options.html",
   "devtools_page": "devtools.html",
