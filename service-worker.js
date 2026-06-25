@@ -20,6 +20,20 @@ async function ensureDefaults() {
 
 function nextRuleIdGen(start) { let current = start; return () => (++current); }
 
+async function updateBadge() {
+  try {
+    const { [RULES_KEY]: rules, [MASTER_ENABLED_KEY]: masterEnabled } = await getStorage([RULES_KEY, MASTER_ENABLED_KEY]);
+    const on = masterEnabled !== false;
+    const count = on ? (rules || []).filter(r => r && r.enabled).length : 0;
+    const text = count > 0 ? (count > 99 ? "99+" : String(count)) : "";
+    await chrome.action.setBadgeText({ text });
+    if (text) {
+      await chrome.action.setBadgeBackgroundColor({ color: "#22C55E" });
+      if (chrome.action.setBadgeTextColor) await chrome.action.setBadgeTextColor({ color: "#FFFFFF" });
+    }
+  } catch (e) { /* action API may be unavailable in some contexts */ }
+}
+
 
 function buildDnrRuleFromDescriptor(desc, getId) {
   if (!desc.enabled) return null;
@@ -100,6 +114,8 @@ async function rebuildDynamicRules() {
       if (t.id) chrome.tabs.sendMessage(t.id, { type: "oro-rules-updated" }).catch(()=>{});
     }
   });
+
+  await updateBadge();
 }
 
 chrome.runtime.onInstalled.addListener(async () => { await ensureDefaults(); await rebuildDynamicRules(); });
