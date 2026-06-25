@@ -44,19 +44,27 @@ How to get the OAuth credentials (one-time):
    Follow the prompts (it opens a Google consent page, you paste back a code) and it
    prints the `refresh_token`. Save client id, secret, and refresh token as the secrets above.
 
-### Edge Add-ons (later — account still in verification)
+### Edge Add-ons
+
+The Edge publish step is already wired into the workflow — it activates automatically
+once the `EDGE_*` secrets exist (until then it's skipped). No YAML changes needed.
 
 Product ID is already known: `0683f83c-0e7e-4085-b6e7-14b02d74832d`.
 
-When your Partner Center account is verified and you can create API credentials:
+When your Partner Center account is verified:
+
+1. Sign in to Partner Center -> **Microsoft Edge** -> **Publish API**.
+2. Click **Create API credentials** -> note the **Client ID** and **API key**.
+3. Add these repo secrets:
 
 | Secret | Value |
 | --- | --- |
 | `EDGE_PRODUCT_ID` | `0683f83c-0e7e-4085-b6e7-14b02d74832d` |
-| `EDGE_CLIENT_ID` | from Partner Center API settings |
-| `EDGE_API_KEY` | from Partner Center API settings |
+| `EDGE_CLIENT_ID` | from Partner Center -> Publish API |
+| `EDGE_API_KEY` | from Partner Center -> Publish API |
 
-Then uncomment the "Publish to Edge Add-ons" step in `.github/workflows/release.yml`.
+Note: like Chrome, the **first** Edge submission must be done manually in Partner Center;
+the API only publishes new versions of an existing add-on.
 
 ## Notes
 

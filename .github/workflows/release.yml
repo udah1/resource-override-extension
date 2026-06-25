@@ -55,13 +55,22 @@ jobs:
     needs: check
     if: needs.check.outputs.should_publish == 'true'
     runs-on: ubuntu-latest
+    # secrets can't be used directly in step-level `if:`, so surface presence flags
+    # as job-level env vars and gate each store step on those.
+    env:
+      HAS_CHROME: ${{ secrets.CHROME_CLIENT_ID != '' }}
+      HAS_EDGE: ${{ secrets.EDGE_CLIENT_ID != '' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Build ZIP
         run: bash package.sh
 
+      # Each store step is gated on its secrets and won't fail the whole run, so one
+      # store being unconfigured or rejecting the upload never blocks the other.
       - name: Publish to Chrome Web Store
+        if: env.HAS_CHROME == 'true'
+        continue-on-error: true
         uses: mnao305/chrome-extension-upload@v5
         with:
           file-path: dist/extension.zip
@@ -70,16 +79,17 @@ jobs:
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
 
-      # --- Edge Add-ons (disabled until Partner Center verification + API keys exist) ---
+      # Edge Add-ons. Runs only once EDGE_* secrets are set (account still verifying).
       # Product ID: 0683f83c-0e7e-4085-b6e7-14b02d74832d
-      # Uncomment once EDGE_* secrets are set in the repo.
-      # - name: Publish to Edge Add-ons
-      #   uses: wdzeng/edge-addon@v2
-      #   with:
-      #     product-id: ${{ secrets.EDGE_PRODUCT_ID }}
-      #     zip-path: dist/extension.zip
-      #     client-id: ${{ secrets.EDGE_CLIENT_ID }}
-      #     api-key: ${{ secrets.EDGE_API_KEY }}
+      - name: Publish to Edge Add-ons
+        if: env.HAS_EDGE == 'true'
+        continue-on-error: true
+        uses: wdzeng/edge-addon@v2
+        with:
+          product-id: ${{ secrets.EDGE_PRODUCT_ID }}
+          zip-path: dist/extension.zip
+          client-id: ${{ secrets.EDGE_CLIENT_ID }}
+          api-key: ${{ secrets.EDGE_API_KEY }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
