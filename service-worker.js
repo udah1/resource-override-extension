@@ -20,16 +20,68 @@ async function ensureDefaults() {
 
 function nextRuleIdGen(start) { let current = start; return () => (++current); }
 
+const ICON_PATHS = { 16: "icons/icon16.png", 32: "icons/icon32.png", 48: "icons/icon48.png", 128: "icons/icon128.png" };
+let _baseIconBitmap = null;
+
+async function getBaseIcon() {
+  if (_baseIconBitmap) return _baseIconBitmap;
+  const resp = await fetch(chrome.runtime.getURL("icons/icon128.png"));
+  const blob = await resp.blob();
+  _baseIconBitmap = await createImageBitmap(blob);
+  return _baseIconBitmap;
+}
+
+async function drawIconWithBadge(count) {
+  const size = 128;
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+  const base = await getBaseIcon();
+  ctx.clearRect(0, 0, size, size);
+  ctx.drawImage(base, 0, 0, size, size);
+
+  const label = count > 99 ? "99+" : String(count);
+  // Tuck the badge into the bottom-right corner (pushed right + down) so it
+  // overlaps the icon as little as possible. Chrome's native badge can't be moved,
+  // so we render our own here.
+  const r = 38;
+  const cx = size - r + 8;   // shift right (slightly off the right edge)
+  const cy = size - r + 8;   // shift down  (slightly off the bottom edge)
+
+  // White outline ring for contrast against the icon, then the green disc.
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#22C55E";
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const fontPx = label.length >= 3 ? 34 : (label.length === 2 ? 44 : 52);
+  ctx.font = `bold ${fontPx}px -apple-system, "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillText(label, cx, cy + 2);
+
+  return ctx.getImageData(0, 0, size, size);
+}
+
 async function updateBadge() {
   try {
     const { [RULES_KEY]: rules, [MASTER_ENABLED_KEY]: masterEnabled } = await getStorage([RULES_KEY, MASTER_ENABLED_KEY]);
     const on = masterEnabled !== false;
     const count = on ? (rules || []).filter(r => r && r.enabled).length : 0;
-    const text = count > 0 ? (count > 99 ? "99+" : String(count)) : "";
-    await chrome.action.setBadgeText({ text });
-    if (text) {
-      await chrome.action.setBadgeBackgroundColor({ color: "#22C55E" });
-      if (chrome.action.setBadgeTextColor) await chrome.action.setBadgeTextColor({ color: "#FFFFFF" });
+
+    // Always keep the native badge cleared (we draw our own corner badge).
+    try { await chrome.action.setBadgeText({ text: "" }); } catch {}
+
+    if (count > 0 && typeof OffscreenCanvas !== "undefined") {
+      const imageData = await drawIconWithBadge(count);
+      await chrome.action.setIcon({ imageData });
+    } else {
+      // No active rules → restore the plain icon.
+      await chrome.action.setIcon({ path: ICON_PATHS });
     }
   } catch (e) { /* action API may be unavailable in some contexts */ }
 }
