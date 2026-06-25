@@ -10,3 +10,4 @@ _metadata/
 
 # Build output
 dist/
+store-assets/*
