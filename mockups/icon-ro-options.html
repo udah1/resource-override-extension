@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORO — "RO" monogram options</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap');
+:root{ --accent:#22C55E; --blue:#3B82F6; }
+*{box-sizing:border-box}
+body{margin:0;background:#0F172A;color:#F8FAFC;font-family:'IBM Plex Sans',system-ui,sans-serif;padding:28px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:#94A3B8;font-size:13px;margin-bottom:22px;max-width:80ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.card{background:#1E293B;border:1px solid #2c3a52;border-radius:12px;padding:16px}
+.row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.name{font-weight:700;font-size:14px}
+.concept{color:#94A3B8;font-size:12px;font-family:'JetBrains Mono',monospace}
+.badges{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--accent),var(--blue));color:#06210f;box-shadow:0 4px 14px rgba(34,197,94,.35)}
+.badge.lg{width:60px;height:60px;border-radius:15px}
+.badge.term{background:#0A0E0A;border:1px solid #22FF88;color:#22FF88;box-shadow:0 0 10px rgba(34,255,136,.5)}
+.badge.light{background:#fff;color:#0f172a;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.badge.indigo{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff}
+.tiny{display:flex;gap:6px;align-items:center}
+.tiny .b{border-radius:4px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--blue));color:#06210f}
+.legend{display:flex;gap:18px;flex-wrap:wrap;color:#94A3B8;font-size:12px;margin:16px 0}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>“RO” monogram — integrated logo candidates</h1>
+<div class="sub">Lettermark fused with the override idea. Each shown as gradient badge, terminal, light, indigo, and 16px / 24px favicon sizes. Pick a number.</div>
+<div class="legend">
+  <span><span class="dot" style="background:linear-gradient(135deg,#22C55E,#3B82F6)"></span>gradient</span>
+  <span><span class="dot" style="background:#0A0E0A;border:1px solid #22FF88"></span>terminal</span>
+  <span><span class="dot" style="background:#fff"></span>light</span>
+  <span><span class="dot" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)"></span>indigo</span>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+// each entry returns inner SVG content on a 0 0 48 48 canvas, using currentColor
+const TXT = (s,x,size=26,ls=-1.5) => `<text x="${x}" y="33" font-family="'IBM Plex Sans',sans-serif" font-weight="800" font-size="${size}" letter-spacing="${ls}" fill="currentColor">${s}</text>`;
+const TXTM = (s,x,size=24,ls=-1) => `<text x="${x}" y="33" font-family="'JetBrains Mono',monospace" font-weight="700" font-size="${size}" letter-spacing="${ls}" fill="currentColor">${s}</text>`;
+
+const items = [
+  { n:"1 · Monogram", c:"RO bold tile", i:
+    `<text x="24" y="33" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-weight="800" font-size="26" letter-spacing="-1.5" fill="currentColor">RO</text>` },
+
+  { n:"2 · RO + redirect", c:"arrow under RO", i:
+    `<text x="24" y="28" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-weight="800" font-size="22" letter-spacing="-1.5" fill="currentColor">RO</text>
+     <path d="M9 38h24" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+     <path d="M29 34l5 4-5 4" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` },
+
+  { n:"3 · O = target", c:"R + match ring", i:
+    `${TXT("R",8)}
+     <g transform="translate(33,24)" fill="none" stroke="currentColor"><circle r="8.5" stroke-width="2.4"/><circle r="3.6" stroke-width="2.4"/><circle r="0.6" stroke="none" fill="currentColor"/></g>` },
+
+  { n:"4 · O = repeat", c:"override loop", i:
+    `${TXT("R",8)}
+     <g transform="translate(33,24)" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+       <path d="M7.5 -3 A8 8 0 1 0 8 3.5"/><path d="M8 -7 l0 5 -5 0"/></g>` },
+
+  { n:"5 · R ⇄ O", c:"swap between", i:
+    `${TXT("R",4,24,0)}
+     <g transform="translate(24,24)" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M-5 -3 H5"/><path d="M2 -6 l3 3 -3 3"/><path d="M5 4 H-5"/><path d="M-2 1 l-3 3 3 3"/></g>
+     ${TXT("O",30,24,0)}` },
+
+  { n:"6 · Braces", c:"{RO} mock", i:
+    `<text x="24" y="33" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-weight="700" font-size="21" letter-spacing="-1" fill="currentColor">{RO}</text>` },
+
+  { n:"7 · O = node", c:"route / fork", i:
+    `${TXT("R",8)}
+     <g transform="translate(31,24)" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="0" r="6.5"/><path d="M6.5 -4 L12 -9"/><circle cx="13" cy="-10" r="2.2" fill="currentColor" stroke="none"/></g>` },
+
+  { n:"8 · Stacked", c:"R over O + arrow", i:
+    `<text x="20" y="22" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-weight="800" font-size="17" fill="currentColor">R</text>
+     <text x="20" y="40" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-weight="800" font-size="17" fill="currentColor">O</text>
+     <path d="M33 12 v18" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+     <path d="M29 26 l4 5 4-5" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` },
+
+  { n:"9 · O = swap O", c:"O wrapped by arrows", i:
+    `${TXT("R",8)}
+     <g transform="translate(33,24)" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+       <circle r="6" /><path d="M-1 -9 a9 9 0 0 1 8 4"/><path d="M8 -7 l-1.5 4.5 -4.5 -1.5"/></g>` },
+
+  { n:"10 · Mono tile", c:"RO mono (terminal-y)", i:
+    `<text x="24" y="33" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-weight="800" font-size="23" letter-spacing="-1" fill="currentColor">RO</text>` },
+];
+
+const wrap = (inner, size) => `<svg width="${size}" height="${size}" viewBox="0 0 48 48">${inner}</svg>`;
+const grid = document.getElementById('grid');
+for (const it of items){
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML = `
+    <div class="row">
+      <div class="badge lg">${wrap(it.i,40)}</div>
+      <div><div class="name">${it.n}</div><div class="concept">${it.c}</div></div>
+    </div>
+    <div class="badges">
+      <div class="badge">${wrap(it.i,28)}</div>
+      <div class="badge term">${wrap(it.i,28)}</div>
+      <div class="badge light">${wrap(it.i,28)}</div>
+      <div class="badge indigo">${wrap(it.i,28)}</div>
+      <div class="tiny" title="favicon sizes">
+        <span class="b" style="width:16px;height:16px;border-radius:3px">${wrap(it.i,13)}</span>
+        <span class="b" style="width:24px;height:24px;border-radius:5px">${wrap(it.i,19)}</span>
+      </div>
+    </div>`;
+  grid.appendChild(el);
+}
+</script>
+</body>
+</html>

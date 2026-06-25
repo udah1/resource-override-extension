@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-variant="devtools" data-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Open Resource Override</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="pop">
+    <div class="pop-head">
+      <div class="pop-brand">
+        <div class="pop-logo"><svg width="20" height="20" viewBox="0 0 48 48" fill="none" aria-hidden="true"><text x="2" y="33" font-family="'IBM Plex Sans',system-ui,sans-serif" font-weight="800" font-size="25" fill="currentColor">R</text><g transform="translate(24,23)" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M-5 -3 H5"/><path d="M2 -6 l3 3 -3 3"/><path d="M5 4 H-5"/><path d="M-2 1 l-3 3 3 3"/></g><text x="30" y="33" font-family="'IBM Plex Sans',system-ui,sans-serif" font-weight="800" font-size="25" fill="currentColor">O</text></svg></div>
+        <div><strong>Resource Override</strong><div class="sub mono">MV3</div></div>
+      </div>
+      <button id="openOptions" class="btn secondary">Options</button>
+    </div>
+
+    <div class="pop-row">
+      <label for="masterEnabled"><input type="checkbox" id="masterEnabled"> Enable all rules</label>
+    </div>
+
+    <div class="pop-actions">
+      <button id="reload" class="btn secondary">Reload tab</button>
+    </div>
+
+    <div class="pop-actions theme-controls">
+      <button id="modeToggle" class="btn icon" type="button" title="Color mode"></button>
+      <select id="variantSelect" class="theme-select" title="Theme" aria-label="Theme">
+        <option value="devtools">DevTools Pro</option>
+        <option value="saas">Clean Light</option>
+        <option value="terminal">Terminal</option>
+      </select>
+    </div>
+
+    <small>Use the Options page to add or edit rules. Immediate mocks appear as <em>307 Internal Redirect</em> (data URL) in DevTools.</small>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

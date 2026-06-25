@@ -1,0 +1,23 @@
+/* Popup layout (tokens from theme.css) */
+body{ width:300px; padding:0; }
+.pop{ padding:14px; }
+.pop-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.pop-brand{ display:flex; align-items:center; gap:9px; min-width:0; }
+.pop-logo{ width:30px; height:30px; border-radius:8px; display:grid; place-items:center; flex:0 0 auto;
+  background:linear-gradient(135deg,var(--accent),var(--c-redirect)); color:var(--on-accent); }
+[data-variant="terminal"] .pop-logo{ background:transparent; border:1px solid var(--accent); color:var(--accent); box-shadow:0 0 10px var(--ring); }
+.pop-brand strong{ font-size:13px; font-weight:700; }
+.pop-brand .sub{ font-size:10.5px; color:var(--muted-2); }
+
+.pop-row{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); margin-bottom:10px; }
+.pop-row label{ font-size:13px; font-weight:600; display:flex; align-items:center; gap:9px; cursor:pointer; }
+.pop-row input[type="checkbox"]{ width:18px; height:18px; }
+
+.pop-actions{ display:flex; gap:8px; margin-bottom:10px; }
+.pop-actions .btn{ flex:1; }
+.theme-controls{ width:100%; }
+.theme-controls .theme-select{ flex:1; }
+
+.pop small{ color:var(--muted-2); font-size:11px; line-height:1.5; display:block; }
+.pop em{ color:var(--muted); font-style:normal; }

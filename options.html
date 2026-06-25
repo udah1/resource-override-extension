@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" data-variant="devtools" data-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Open Resource Override — Options</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header>
+    <div class="hdr-left">
+      <div class="brand">
+        <div class="logo"><svg width="22" height="22" viewBox="0 0 48 48" fill="none" aria-hidden="true"><text x="2" y="33" font-family="'IBM Plex Sans',system-ui,sans-serif" font-weight="800" font-size="25" fill="currentColor">R</text><g transform="translate(24,23)" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M-5 -3 H5"/><path d="M2 -6 l3 3 -3 3"/><path d="M5 4 H-5"/><path d="M-2 1 l-3 3 3 3"/></g><text x="30" y="33" font-family="'IBM Plex Sans',system-ui,sans-serif" font-weight="800" font-size="25" fill="currentColor">O</text></svg></div>
+        <div><h1>Open Resource Override</h1><div class="sub mono">MV3 · v1.3.4</div></div>
+      </div>
+      <span class="switch"><label for="masterEnabled">Enable all rules</label> <input type="checkbox" id="masterEnabled"></span>
+    </div>
+    <div class="hdr-right">
+      <div class="theme-controls">
+        <button id="modeToggle" class="btn icon" type="button" title="Color mode"></button>
+        <select id="variantSelect" class="theme-select" title="Theme" aria-label="Theme">
+          <option value="devtools">DevTools Pro</option>
+          <option value="saas">Clean Light</option>
+          <option value="terminal">Terminal</option>
+        </select>
+      </div>
+      <button id="exportBtn" class="btn secondary">Export</button>
+      <button id="importBtn" class="btn secondary">Import</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>
+  </header>
+
+  <main>
+    <section id="editor">
+      <div class="section-head">
+        <h2 id="editorTitle">Add Rule</h2>
+        <span id="editorTypePill" class="pill"></span>
+      </div>
+      <div class="section-body">
+        <form id="ruleForm">
+          <input type="hidden" id="ruleId">
+          <div class="row"><label for="name">Name</label><input id="name" placeholder="Describe this rule"></div>
+          <div class="row"><label for="enabled">Enabled</label><input type="checkbox" id="enabled" checked></div>
+          <div class="row"><label for="matchType">Match type</label>
+            <select id="matchType">
+              <option value="wildcard">Wildcard</option>
+              <option value="regex">Regex</option>
+            </select>
+          </div>
+          <div class="row full">
+            <div class="label-row"><label for="pattern">URL pattern</label><button type="button" id="testMatchBtn" class="link-btn">Test match</button></div>
+            <input id="pattern" class="mono" placeholder="e.g. */users/*/app/*/analytics/design*">
+            <div id="testMatchPanel" class="test-panel" hidden>
+              <input id="testUrl" class="mono" placeholder="Paste a URL to test against this pattern…">
+              <div id="testMatchResult" class="test-result"></div>
+            </div>
+          </div>
+          <div class="row"><label for="exclude">Exclude</label><input id="exclude" placeholder="e.g. *.png, *.ico"></div>
+          <div class="row"><label for="caseSensitive">Case sensitive</label><input type="checkbox" id="caseSensitive"></div>
+          <div class="row"><label for="action">Action</label>
+            <select id="action">
+              <option value="redirectUrl">Redirect URL → URL</option>
+              <option value="mockText">Redirect/Mock with text</option>
+              <option value="modifyHeaders">Modify response headers</option>
+              <option value="injectJS">Inject JS (page)</option>
+              <option value="injectCSS">Inject CSS (page)</option>
+              <option value="block">Block request</option>
+            </select>
+          </div>
+          <div class="row"><label for="priority">Priority</label><input id="priority" type="number" value="1" min="1"></div>
+
+          <div id="redirectUrlRow" class="row full actionRow"><label for="redirectUrl">Target URL</label><input id="redirectUrl" class="mono" placeholder="https://example.com/mock.json"></div>
+
+          <div id="mockRow" class="actionRow">
+            <div class="row"><label for="mockKind">Mock kind</label>
+              <select id="mockKind">
+                <option value="json">JSON</option>
+                <option value="js">JavaScript</option>
+                <option value="css">CSS</option>
+                <option value="auto">Auto-detect</option>
+              </select>
+            </div>
+            <div class="row"><label for="mockStatus">Status (fetch/XHR)</label><input id="mockStatus" type="number" value="200" min="100" max="599"></div>
+            <div class="row"><label for="mockMode">Mode</label>
+              <select id="mockMode">
+                <option value="immediate">Immediate (307 + data:)</option>
+                <option value="after">After response (fetch/XHR)</option>
+              </select>
+            </div>
+            <div class="row"><label for="waitForReal">Wait for real response</label><input type="checkbox" id="waitForReal"></div>
+            <div class="row full"><label for="mockBody">Mock body</label><textarea id="mockBody" placeholder="{ &quot;ok&quot;: true }"></textarea></div>
+            <div class="row right"><button type="button" id="prettyBtn" class="btn secondary">Prettify</button></div>
+          </div>
+
+          <div id="bodyMatchRow" class="actionRow">
+            <div class="row"><label for="bodyMethod">HTTP method</label>
+              <select id="bodyMethod">
+                <option value="*">Any</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="PATCH">PATCH</option>
+                <option value="DELETE">DELETE</option>
+                <option value="GET">GET</option>
+              </select>
+            </div>
+            <div class="row"><label for="bodyMatchType">Body match</label>
+              <select id="bodyMatchType">
+                <option value="none">None</option>
+                <option value="contains">Contains</option>
+                <option value="equals">Equals</option>
+                <option value="regex">Regex</option>
+              </select>
+            </div>
+            <div class="row full"><label for="bodyMatchValue">Request body match value</label><textarea id="bodyMatchValue" class="mono" placeholder='e.g. &quot;userId&quot;:42'></textarea></div>
+            <div class="row full"><small class="hint">Body matching only applies to <strong>Mock with text</strong> in <strong>After response</strong> mode. Use it to tell apart requests to the same URL by their payload (e.g. two POSTs with different bodies).</small></div>
+          </div>
+
+          <div id="headersRow" class="actionRow">
+            <div class="headers">
+              <div class="headers-head"><span>Header</span><span>Operation</span><span>Value</span><span></span></div>
+              <div id="headersList"></div>
+              <div class="row right"><button type="button" id="addHeaderBtn" class="btn secondary">+ Add header</button></div>
+              <div class="row"><label for="exposeHeaders">Expose to JS</label><input type="checkbox" id="exposeHeaders"></div>
+              <div class="row full"><small class="hint">To read custom response headers in JS (fetch/XHR), CORS requires <code>Access-Control-Expose-Headers</code>. “Expose to JS” adds it automatically for the headers you SET. Some headers are restricted by Chrome.</small></div>
+            </div>
+          </div>
+
+          <div id="injectRow" class="row full actionRow">
+            <label for="injectBody">Injected content</label>
+            <textarea id="injectBody" class="mono" placeholder="console.log('hello from injector');"></textarea>
+            <div class="row right"><button type="button" id="prettyInjectBtn" class="btn secondary">Prettify</button></div>
+          </div>
+
+          <div class="row full"><label>Resource types</label><div id="resourceTypes" class="chips"></div></div>
+
+          <div class="row right">
+            <button type="button" id="resetBtn" class="btn secondary">Clear</button>
+            <button type="submit" id="saveBtn" class="btn primary">Save rule</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="list">
+      <div class="section-head">
+        <h2>Rules <span class="count" id="ruleCount">· 0</span></h2>
+        <button type="button" id="newRuleBtn" class="btn primary">+ New rule</button>
+      </div>
+      <div id="rules"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>
+      Due to Manifest V3 limits, arbitrary status codes are only guaranteed for fetch/XHR via the “After response” mode.
+      Immediate mocks use a 307 Internal Redirect to a <code>data:</code> URL; headers can be modified via DNR rules.
+    </small>
+    <span class="credit">Created by <strong>Annie Rosh</strong> with <strong>OpenAI</strong></span>
+  </footer>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

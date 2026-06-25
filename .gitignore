@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+
+# Chrome-generated artifacts (created when loading the unpacked extension)
+_metadata/
+
+# Editor
+.cursor/
+.vscode/
