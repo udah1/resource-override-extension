@@ -338,7 +338,10 @@ function renderRules() {
       await chrome.storage.local.set({ [RULES_KEY]: state.rules });
     });
     item.querySelector('[data-act="del"]').addEventListener("click", async () => {
-      state.rules.splice(idx, 1);
+      const i = state.rules.findIndex(x => x.id === r.id);
+      if (i < 0) return;
+      state.rules.splice(i, 1);
+      if (els.ruleId.value && String(els.ruleId.value) === String(r.id)) resetForm();
       await chrome.storage.local.set({ [RULES_KEY]: state.rules });
     });
     els.rules.appendChild(item);
@@ -419,17 +422,55 @@ els.exportBtn.addEventListener("click", () => {
   const a = document.createElement("a"); a.href = url; a.download = "oro-rules.json"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
+const KNOWN_ACTIONS = new Set(["redirectUrl", "mockText", "modifyHeaders", "injectJS", "injectCSS", "block"]);
+function sanitizeImportedRule(raw) {
+  if (!raw || typeof raw !== "object" || !KNOWN_ACTIONS.has(raw.action)) return null;
+  const o = { ...raw };
+  if (typeof o.id !== "string" || !o.id) o.id = cid();
+  o.enabled = (typeof o.enabled === "boolean") ? o.enabled : true;
+  o.matchType = (o.matchType === "regex") ? "regex" : "wildcard";
+  o.pattern = (typeof o.pattern === "string") ? o.pattern : "";
+  o.exclude = Array.isArray(o.exclude) ? o.exclude.filter(x => typeof x === "string") : [];
+  o.priority = Number(o.priority) || 1;
+  o.isCaseSensitive = !!o.isCaseSensitive;
+  return o;
+}
+
 els.importBtn.addEventListener("click", () => els.importFile.click());
 els.importFile.addEventListener("change", async (e) => {
   const f = e.target.files[0]; if (!f) return;
-  const text = await f.text();
-  try { const list = JSON.parse(text); if (Array.isArray(list)) { state.rules = list; await chrome.storage.local.set({ [RULES_KEY]: state.rules }); } }
-  catch { alert("Invalid JSON"); } finally { e.target.value = ""; }
+  try {
+    const text = await f.text();
+    const list = JSON.parse(text);
+    if (!Array.isArray(list)) { alert("Invalid file: expected a JSON array of rules."); return; }
+    const seen = new Set();
+    const cleaned = [];
+    let skipped = 0;
+    for (const raw of list) {
+      const s = sanitizeImportedRule(raw);
+      if (!s) { skipped++; continue; }
+      while (seen.has(s.id)) s.id = cid();
+      seen.add(s.id);
+      cleaned.push(s);
+    }
+    if (!cleaned.length) { alert("No valid rules found in file."); return; }
+    state.rules = cleaned;
+    await chrome.storage.local.set({ [RULES_KEY]: state.rules });
+    alert(`Imported ${cleaned.length} rule(s)` + (skipped ? `, skipped ${skipped} invalid.` : "."));
+  } catch {
+    alert("Invalid JSON");
+  } finally {
+    e.target.value = "";
+  }
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes[RULES_KEY]) { state.rules = changes[RULES_KEY].newValue || []; renderRules(); }
+  if (changes[MASTER_ENABLED_KEY]) {
+    state.masterEnabled = changes[MASTER_ENABLED_KEY].newValue !== false;
+    els.masterEnabled.checked = state.masterEnabled;
+  }
 });
 
 resetForm();

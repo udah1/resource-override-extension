@@ -15,6 +15,12 @@ init();
 enabledEl.addEventListener("change", async (e) => {
   await chrome.runtime.sendMessage({ type: "oro-toggle-master", enabled: e.currentTarget.checked });
 });
+
+// Keep the toggle in sync if it's changed elsewhere (options page, another popup).
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+  if (changes[MASTER_ENABLED_KEY]) enabledEl.checked = changes[MASTER_ENABLED_KEY].newValue !== false;
+});
 reloadBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab && tab.id) chrome.tabs.reload(tab.id);
