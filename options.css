@@ -34,17 +34,25 @@ section{ background:var(--surface); border:1px solid var(--border); border-radiu
 [data-variant="terminal"] .section-head h2{ color:var(--accent); }
 .section-head .count{ color:var(--muted-2); font-weight:500; }
 .section-body{ padding:18px; }
-#editor .section-body{ flex:1 1 auto; overflow-y:auto; }
+/* No bottom padding here: it would sit *below* the sticky footer (bottom:0 sticks to
+   the padding edge), leaving a strip where scrolled content peeks through. */
+#editor .section-body{ flex:1 1 auto; overflow-y:auto; padding-bottom:0; }
 
 /* Sticky action footer (Clear / Save) inside the editor's scroll area */
 #ruleForm > .row.right:last-child{
   position:sticky; bottom:0; z-index:2;
-  margin:22px -18px -18px; padding:12px 18px 0;
+  margin:22px -18px 0; padding:12px 18px;
   background:var(--surface); border-top:1px solid var(--border);
   border-radius:0 0 var(--radius) var(--radius);
 }
 
 #editorTitle{ margin:0; }
+.editor-head-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+/* Back-to-list button: hidden on wide (two-pane); shown only in compact while editing. */
+.editor-back{ display:none; align-items:center; gap:4px; background:transparent; border:none; padding:0; cursor:pointer; color:var(--accent); font-size:13px; font-weight:600; }
+.editor-back:hover{ text-decoration:underline; }
+/* Back button inside the sticky footer: only shown in compact editing mode. */
+.footer-back{ display:none; margin-right:auto; }
 .list-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .list-head h2{ margin:0; }
 
@@ -107,6 +115,8 @@ section{ background:var(--surface); border:1px solid var(--border); border-radiu
 .item .meta{ margin-top:3px; color:var(--muted-2); font-size:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .item .meta .url{ font-family:var(--font-mono); color:var(--muted); font-size:11.5px; word-break:break-all; }
 .item.disabled{ opacity:.5; }
+/* Master switch off → every rule is inert, so dim them all. */
+#rules.master-off .item{ opacity:.5; }
 .item input[type="checkbox"]{ width:17px; height:17px; }
 
 .row-actions{ display:flex; gap:4px; opacity:0; transition:opacity .15s; }
@@ -118,11 +128,20 @@ section{ background:var(--surface); border:1px solid var(--border); border-radiu
 
 /* ---------------- Footer ---------------- */
 footer{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:14px 22px; border-top:1px solid var(--border); background:var(--surface); }
-footer small{ color:var(--muted-2); font-size:11.5px; max-width:70ch; }
+footer small{ color:var(--muted-2); font-size:11.5px; max-width:105ch; line-height:1.6; text-wrap:pretty; }
 footer .credit{ color:var(--muted-2); font-size:12px; }
 code{ font-family:var(--font-mono); font-size:.92em; background:var(--bg-2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
 
 @media (max-width:900px){
   main{ grid-template-columns:1fr; }
-  #editor{ position:static; }
+  /* Compact master-detail: show the list OR the editor, never both. The active
+     pane is driven by body.editing, toggled in options.js on edit/new vs back. */
+  #editor{ position:static; max-height:none; display:none; }
+  body.editing #editor{ display:flex; }
+  body.editing #list{ display:none; }
+  body.editing .editor-back{ display:inline-flex; }
+  body.editing .footer-back{ display:inline-flex; }
+  /* Touch-friendly: row actions always visible, larger tap targets. */
+  .row-actions{ opacity:1; }
+  .icon-btn{ width:38px; height:38px; }
 }

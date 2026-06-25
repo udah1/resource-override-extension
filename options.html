@@ -33,7 +33,13 @@
   <main>
     <section id="editor">
       <div class="section-head">
-        <h2 id="editorTitle">Add Rule</h2>
+        <div class="editor-head-left">
+          <button type="button" id="backToList" class="editor-back" aria-label="Back to rules" title="Back to rules">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <span>Rules</span>
+          </button>
+          <h2 id="editorTitle">Add Rule</h2>
+        </div>
         <span id="editorTypePill" class="pill"></span>
       </div>
       <div class="section-body">
@@ -134,6 +140,7 @@
           <div class="row full"><label>Resource types</label><div id="resourceTypes" class="chips"></div></div>
 
           <div class="row right">
+            <button type="button" id="backToListFooter" class="btn secondary footer-back">← Back</button>
             <button type="button" id="resetBtn" class="btn secondary">Clear</button>
             <button type="submit" id="saveBtn" class="btn primary">Save rule</button>
           </div>
@@ -152,10 +159,10 @@
 
   <footer>
     <small>
-      Due to Manifest V3 limits, arbitrary status codes are only guaranteed for fetch/XHR via the “After response” mode.
-      Immediate mocks use a 307 Internal Redirect to a <code>data:</code> URL; headers can be modified via DNR rules.
+      Due to Manifest V3 limits, arbitrary status codes are only guaranteed for fetch/XHR via the “After response” mode.<br>
+      Immediate mocks use a 307 Internal. Redirect to a <code>data:</code> URL; headers can be modified via DNR rules.
     </small>
-    <span class="credit">Created by <strong>Annie Rosh</strong> with <strong>OpenAI</strong></span>
+    <span class="credit">Created by <strong>Yehuda Huri</strong></span>
   </footer>
 
   <script type="module" src="options.js"></script>

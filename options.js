@@ -75,6 +75,8 @@ const els = {
 
   resourceTypes: document.getElementById("resourceTypes"),
   rules: document.getElementById("rules"),
+  backToList: document.getElementById("backToList"),
+  backToListFooter: document.getElementById("backToListFooter"),
   saveBtn: document.getElementById("saveBtn"),
   resetBtn: document.getElementById("resetBtn"),
 };
@@ -82,6 +84,10 @@ const els = {
 let state = { rules: [], masterEnabled: true };
 
 function cid() { return String(Date.now()) + "-" + Math.random().toString(36).slice(2,8); }
+
+// In compact (narrow / DevTools) layouts this toggles between the list and the editor.
+// On wide layouts both panes are always visible, so the class is a harmless no-op.
+function setEditing(on) { document.body.classList.toggle("editing", !!on); }
 
 async function load() {
   const data = await chrome.storage.local.get([RULES_KEY, MASTER_ENABLED_KEY]);
@@ -252,6 +258,9 @@ function collectHeaders() {
 
 function renderRules() {
   els.rules.innerHTML = "";
+  // When the master switch is off, nothing is actually active — dim the whole list,
+  // including rules whose own checkbox is still ticked.
+  els.rules.classList.toggle("master-off", !state.masterEnabled);
   const countEl = document.getElementById("ruleCount");
   if (countEl) countEl.textContent = "· " + state.rules.length;
   if (!state.rules.length) {
@@ -329,6 +338,7 @@ function renderRules() {
       renderResourceTypeChips(Array.isArray(r.resourceTypes) ? r.resourceTypes : DEFAULT_RESOURCE_TYPES);
       updateActionVisibility();
       refreshActiveHighlight();
+      setEditing(true);
     });
     item.querySelector('[data-act="dup"]').addEventListener("click", async () => {
       const copy = JSON.parse(JSON.stringify(r));
@@ -341,7 +351,7 @@ function renderRules() {
       const i = state.rules.findIndex(x => x.id === r.id);
       if (i < 0) return;
       state.rules.splice(i, 1);
-      if (els.ruleId.value && String(els.ruleId.value) === String(r.id)) resetForm();
+      if (els.ruleId.value && String(els.ruleId.value) === String(r.id)) { resetForm(); setEditing(false); }
       await chrome.storage.local.set({ [RULES_KEY]: state.rules });
     });
     els.rules.appendChild(item);
@@ -367,7 +377,9 @@ els.prettyInjectBtn.addEventListener("click", () => {
 });
 els.addHeaderBtn.addEventListener("click", () => addHeaderRow());
 els.resetBtn.addEventListener("click", resetForm);
-els.newRuleBtn.addEventListener("click", resetForm);
+els.newRuleBtn.addEventListener("click", () => { resetForm(); setEditing(true); });
+els.backToList.addEventListener("click", () => setEditing(false));
+els.backToListFooter.addEventListener("click", () => setEditing(false));
 
 els.form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -470,6 +482,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes[MASTER_ENABLED_KEY]) {
     state.masterEnabled = changes[MASTER_ENABLED_KEY].newValue !== false;
     els.masterEnabled.checked = state.masterEnabled;
+    els.rules.classList.toggle("master-off", !state.masterEnabled);
   }
 });
 

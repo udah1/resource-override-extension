@@ -64,27 +64,27 @@ async function drawIconWithBadge(count) {
   ctx.drawImage(base, 0, 0, size, size);
 
   const label = count > 99 ? "99+" : String(count);
-  // Tuck the badge into the bottom-right corner (pushed right + down) so it
-  // overlaps the icon as little as possible. Chrome's native badge can't be moved,
-  // so we render our own here.
-  const r = 38;
-  const cx = size - r + 8;   // shift right (slightly off the right edge)
-  const cy = size - r + 8;   // shift down  (slightly off the bottom edge)
+  // Tuck the badge into the bottom-right corner, pushed further off the edge so a
+  // slightly larger disc still hides as little of the icon as possible. Chrome's
+  // native badge can't be moved, so we render our own here.
+  const r = 42;
+  const cx = size - r + 16;  // shift right (well off the right edge)
+  const cy = size - r + 16;  // shift down  (well off the bottom edge)
 
-  // White outline ring for contrast against the icon, then the green disc.
+  // White outline ring for contrast against the icon, then the red disc.
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fillStyle = "#ffffff";
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#22C55E";
+  ctx.fillStyle = "#EF4444";
   ctx.fill();
 
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  const fontPx = label.length >= 3 ? 34 : (label.length === 2 ? 44 : 52);
+  const fontPx = label.length >= 3 ? 36 : (label.length === 2 ? 46 : 54);
   ctx.font = `bold ${fontPx}px -apple-system, "Helvetica Neue", Arial, sans-serif`;
   ctx.fillText(label, cx, cy + 2);
 
