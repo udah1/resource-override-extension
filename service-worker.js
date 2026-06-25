@@ -3,22 +3,46 @@ import { wildcardToRegex, guessContentType, toDataUrl, normalizeResourceTypes, c
 
 const RULES_KEY = "oro_rules";
 const MASTER_ENABLED_KEY = "oro_master_enabled";
-const LAST_RULE_ID_KEY = "oro_last_rule_id";
+const RULE_ERRORS_KEY = "oro_rule_errors";
+const LEGACY_LAST_ID_KEY = "oro_last_rule_id";
 const DNR_ID_START = 1000;
+const TEMP_ID_START = 900000; // disjoint range for non-matching validation probes
+const MAX_DYNAMIC_RULES = (chrome.declarativeNetRequest && chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES) || 5000;
+
+function cid() { return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8); }
 
 async function getStorage(keys) { return await chrome.storage.local.get(keys); }
 async function setStorage(obj) { return await chrome.storage.local.set(obj); }
 
-async function ensureDefaults() {
-  const { [RULES_KEY]: rules, [MASTER_ENABLED_KEY]: enabled, [LAST_RULE_ID_KEY]: lastId } = await getStorage([RULES_KEY, MASTER_ENABLED_KEY, LAST_RULE_ID_KEY]);
-  const updates = {};
-  if (!Array.isArray(rules)) updates[RULES_KEY] = [];
-  if (typeof enabled !== "boolean") updates[MASTER_ENABLED_KEY] = true;
-  if (typeof lastId !== "number") updates[LAST_RULE_ID_KEY] = DNR_ID_START;
-  if (Object.keys(updates).length) await setStorage(updates);
+// Coerce stored rules into a consistent shape and guarantee unique string ids.
+// Runs on upgrade/startup (not only on import) so legacy data can't break the rebuild.
+function normalizeRules(rules) {
+  if (!Array.isArray(rules)) return { rules: [], changed: true };
+  let changed = false;
+  const seen = new Set();
+  const out = rules.map(r => {
+    const o = (r && typeof r === "object") ? { ...r } : {};
+    if (typeof o.id !== "string" || !o.id || seen.has(o.id)) { o.id = cid(); changed = true; }
+    seen.add(o.id);
+    if (typeof o.enabled !== "boolean") { o.enabled = true; changed = true; }
+    if (typeof o.matchType !== "string") { o.matchType = "wildcard"; changed = true; }
+    if (typeof o.pattern !== "string") { o.pattern = ""; changed = true; }
+    if (!Array.isArray(o.exclude)) { o.exclude = (o.exclude == null || o.exclude === "") ? [] : [].concat(o.exclude); changed = true; }
+    if (typeof o.action !== "string") { o.action = "redirectUrl"; changed = true; }
+    return o;
+  });
+  return { rules: out, changed };
 }
 
-function nextRuleIdGen(start) { let current = start; return () => (++current); }
+async function ensureDefaults() {
+  const data = await getStorage([RULES_KEY, MASTER_ENABLED_KEY, LEGACY_LAST_ID_KEY]);
+  const updates = {};
+  const norm = normalizeRules(data[RULES_KEY]);
+  if (!Array.isArray(data[RULES_KEY]) || norm.changed) updates[RULES_KEY] = norm.rules;
+  if (typeof data[MASTER_ENABLED_KEY] !== "boolean") updates[MASTER_ENABLED_KEY] = true;
+  if (Object.keys(updates).length) await setStorage(updates);
+  if (LEGACY_LAST_ID_KEY in data) { try { await chrome.storage.local.remove(LEGACY_LAST_ID_KEY); } catch {} }
+}
 
 const ICON_PATHS = { 16: "icons/icon16.png", 32: "icons/icon32.png", 48: "icons/icon48.png", 128: "icons/icon128.png" };
 let _baseIconBitmap = null;
@@ -87,12 +111,11 @@ async function updateBadge() {
 }
 
 
-function buildDnrRuleFromDescriptor(desc, getId) {
+function buildDnrRuleFromDescriptor(desc, id) {
   if (!desc.enabled) return null;
   if (desc.action === "injectJS" || desc.action === "injectCSS") return null;
   if (desc.action === "mockText" && desc.mock && desc.mock.mode === "after") return null; // handled in page hook
 
-  const id = getId();
   const resourceTypes = normalizeResourceTypes(desc.resourceTypes);
   const condition = { resourceTypes };
 
@@ -142,32 +165,112 @@ function buildDnrRuleFromDescriptor(desc, getId) {
 }
 
 
-async function rebuildDynamicRules() {
-  const { [RULES_KEY]: rules, [MASTER_ENABLED_KEY]: masterEnabled, [LAST_RULE_ID_KEY]: lastId } = await getStorage([RULES_KEY, MASTER_ENABLED_KEY, LAST_RULE_ID_KEY]);
-  const getId = nextRuleIdGen(lastId || DNR_ID_START);
+async function regexOk(regex, isCaseSensitive) {
+  try {
+    const res = await chrome.declarativeNetRequest.isRegexSupported({ regex, isCaseSensitive: !!isCaseSensitive });
+    return !!(res && res.isSupported);
+  } catch { return false; }
+}
 
-  const toAdd = [];
-  if (masterEnabled !== false) {
-    for (const r of (rules || [])) {
-      const d = buildDnrRuleFromDescriptor(r, getId);
-      if (d) toAdd.push(d);
+// Validate each candidate's ACTION by briefly adding it under a guaranteed
+// non-matching condition in a disjoint temp-id range (so it can never intercept
+// real traffic), then removing it. Returns the rules DNR accepts. Regex conditions
+// are already validated up-front via isRegexSupported, so probes use a urlFilter.
+async function probeGoodRules(candidates, idToUser, errors) {
+  const good = [];
+  let tempId = TEMP_ID_START;
+  for (const rule of candidates) {
+    const probe = {
+      id: tempId++,
+      priority: rule.priority,
+      action: rule.action,
+      condition: { urlFilter: "|https://oro-probe.invalid/__never__", resourceTypes: ["main_frame"] }
+    };
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({ addRules: [probe] });
+      good.push(rule);
+    } catch (e) {
+      errors.push({ ruleId: idToUser.get(rule.id) ?? null, reason: "rejected by DNR: " + e, at: Date.now() });
+    } finally {
+      try { await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [probe.id] }); } catch {}
     }
   }
-  const newLastId = toAdd.reduce((m, r) => Math.max(m, r.id), lastId || DNR_ID_START);
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: Array.from({length: Math.max(0,(lastId||DNR_ID_START)+1000)}, (_,i)=>i).filter(x=>x>=DNR_ID_START && x<= (lastId||DNR_ID_START)+1000),
-    addRules: toAdd
-  });
-  await setStorage({ [LAST_RULE_ID_KEY]: newLastId });
+  return good;
+}
+
+async function doRebuild() {
+  const data = await getStorage([RULES_KEY, MASTER_ENABLED_KEY]);
+  const rules = Array.isArray(data[RULES_KEY]) ? data[RULES_KEY] : [];
+  const masterEnabled = data[MASTER_ENABLED_KEY] !== false;
+  const errors = [];
+  const toAdd = [];
+  const idToUser = new Map();
+
+  if (masterEnabled) {
+    for (let index = 0; index < rules.length; index++) {
+      const r = rules[index];
+      const id = DNR_ID_START + index; // disabled/after/inject reserve a slot but emit nothing
+      let rule;
+      try { rule = buildDnrRuleFromDescriptor(r, id); }
+      catch (e) { errors.push({ ruleId: r && r.id, reason: "build failed: " + e, at: Date.now() }); continue; }
+      if (!rule) continue;
+      if (rule.condition.regexFilter && !(await regexOk(rule.condition.regexFilter, r.isCaseSensitive))) {
+        errors.push({ ruleId: r.id, reason: "unsupported regexFilter", at: Date.now() }); continue;
+      }
+      if (rule.condition.excludedRegexFilter && !(await regexOk(rule.condition.excludedRegexFilter, r.isCaseSensitive))) {
+        errors.push({ ruleId: r.id, reason: "unsupported excludedRegexFilter", at: Date.now() }); continue;
+      }
+      idToUser.set(id, r.id);
+      toAdd.push(rule);
+    }
+  }
+
+  if (toAdd.length > MAX_DYNAMIC_RULES) {
+    errors.push({ ruleId: null, reason: `too many active rules (${toAdd.length} > ${MAX_DYNAMIC_RULES})`, at: Date.now() });
+    toAdd.length = MAX_DYNAMIC_RULES;
+  }
+
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = existing.map(r => r.id); // live rules + any orphaned temp probes
+
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: toAdd });
+  } catch (e) {
+    // Atomic update failed → nothing changed (old rules still live). Find the bad ones
+    // without touching live traffic, then apply only the good rules.
+    const good = await probeGoodRules(toAdd, idToUser, errors);
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: good });
+    } catch (e2) {
+      errors.push({ ruleId: null, reason: "final DNR update failed: " + e2, at: Date.now() });
+      // Leave existing rules as-is (degraded). Do not retry-loop.
+    }
+  }
+
+  await setStorage({ [RULE_ERRORS_KEY]: errors });
 
   // notify tabs
   chrome.tabs.query({}, tabs => {
     for (const t of tabs) {
-      if (t.id) chrome.tabs.sendMessage(t.id, { type: "oro-rules-updated" }).catch(()=>{});
+      if (t.id) chrome.tabs.sendMessage(t.id, { type: "oro-rules-updated" }).catch(() => {});
     }
   });
 
   await updateBadge();
+}
+
+// Single-flight with coalescing: overlapping triggers collapse into one trailing run,
+// and each run re-reads storage so it always applies the latest snapshot.
+let _rebuilding = false;
+let _rebuildQueued = false;
+async function rebuildDynamicRules() {
+  if (_rebuilding) { _rebuildQueued = true; return; }
+  _rebuilding = true;
+  try {
+    do { _rebuildQueued = false; await doRebuild(); } while (_rebuildQueued);
+  } finally {
+    _rebuilding = false;
+  }
 }
 
 chrome.runtime.onInstalled.addListener(async () => { await ensureDefaults(); await rebuildDynamicRules(); });
@@ -187,8 +290,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       for (const r of forContent) { r._compiledRegex = compilePattern(r); }
       sendResponse({ enabled, rules: forContent });
     } else if (msg && msg.type === "oro-toggle-master") {
+      // storage.onChanged triggers the (coalesced) rebuild — no explicit call needed.
       await setStorage({ [MASTER_ENABLED_KEY]: !!msg.enabled });
-      await rebuildDynamicRules();
       sendResponse({ ok: true });
     } else if (msg && msg.type === "oro-inject-main-hook") {
       const tabId = sender?.tab?.id;
