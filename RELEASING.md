@@ -2,16 +2,36 @@
 
 Publishing is automated with GitHub Actions using a **version-bump** trigger.
 
+## Kill switch (read this first)
+
+Publishing is gated by a repository **variable** `PUBLISH_ENABLED`:
+
+- `PUBLISH_ENABLED` unset or not `true` -> the workflow never publishes (and never
+  emails store errors). Use this while a submission is **In review** (stores reject
+  updates during review).
+- `PUBLISH_ENABLED = true` -> publishing follows the version-bump rule below.
+
+Set it under **Settings -> Secrets and variables -> Actions -> Variables**, or:
+
+```bash
+gh variable set PUBLISH_ENABLED -b true   -R udah1/resource-override-extension   # enable
+gh variable set PUBLISH_ENABLED -b false  -R udah1/resource-override-extension   # disable
+```
+
+Typical flow: keep it OFF, wait until the current store submission is **Published**,
+flip it ON, bump the version, then turn it OFF again if you like.
+
 ## How to cut a release
 
-1. Bump the `version` in `manifest.json` (e.g. `1.5.0` -> `1.5.1`).
+1. Make sure `PUBLISH_ENABLED = true` (see above) and no store submission is in review.
+2. Bump the `version` in `manifest.json` (e.g. `1.5.0` -> `1.5.1`).
    Also update the version shown in `options.html` and add a `CHANGELOG.md` entry.
-2. Commit and push to `main`.
-3. The **Release** workflow runs. It publishes **only if** the manifest version is
+3. Commit and push to `main`.
+4. The **Release** workflow runs. It publishes **only if** the manifest version is
    higher than the latest `vX.Y.Z` GitHub Release tag. If the version is unchanged,
    it does nothing — so ordinary code pushes never publish.
 
-That's it: **change the version + push = publish. Same version + push = no-op.**
+That's it: **enable switch + change the version + push = publish.**
 
 ### Manual run
 

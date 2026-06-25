@@ -34,13 +34,23 @@ jobs:
 
       - name: Decide whether to publish
         id: decide
+        env:
+          # Kill switch. Set repo variable PUBLISH_ENABLED=true to allow publishing.
+          # While a store submission is "In review", updates are rejected, so keep this
+          # OFF until the current submission is approved to avoid failed runs/emails.
+          PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
+          FORCE: ${{ github.event.inputs.force }}
         run: |
           MANIFEST_VER="${{ steps.ver.outputs.version }}"
           # Latest release tag like v1.5.0 -> 1.5.0 (empty if none yet).
           LAST_TAG="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
           LAST_VER="${LAST_TAG#v}"
-          echo "manifest=$MANIFEST_VER last_published=$LAST_VER force=${{ github.event.inputs.force }}"
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+          echo "manifest=$MANIFEST_VER last_published=$LAST_VER publish_enabled=$PUBLISH_ENABLED force=$FORCE"
+
+          if [ "$PUBLISH_ENABLED" != "true" ]; then
+            echo "Kill switch off (PUBLISH_ENABLED != true) — skipping publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          elif [ "$FORCE" = "true" ]; then
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           elif [ -z "$LAST_VER" ]; then
             # No prior release: publish the current version once.
