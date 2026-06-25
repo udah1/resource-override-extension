@@ -71,7 +71,7 @@ jobs:
       - name: Publish to Chrome Web Store
         if: env.HAS_CHROME == 'true'
         continue-on-error: true
-        uses: mnao305/chrome-extension-upload@v5
+        uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           file-path: dist/extension.zip
           extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
@@ -84,7 +84,7 @@ jobs:
       - name: Publish to Edge Add-ons
         if: env.HAS_EDGE == 'true'
         continue-on-error: true
-        uses: wdzeng/edge-addon@v2
+        uses: wdzeng/edge-addon@v2.1.1
         with:
           product-id: ${{ secrets.EDGE_PRODUCT_ID }}
           zip-path: dist/extension.zip
