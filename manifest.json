@@ -17,6 +17,7 @@
     "default_title": "Open Resource Override"
   },
   "options_page": "options.html",
+  "devtools_page": "devtools.html",
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"

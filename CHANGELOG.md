@@ -42,7 +42,13 @@ All notable changes to this project are documented here.
   `load`, `loadend`, `error`, `abort`, `timeout`), support `removeEventListener`,
   and add a `window.ORO_XHR_HOOK = false` page escape hatch to disable the XHR hook.
 
+### DevTools
+
+- Add a **Resource Override** panel in DevTools (via `devtools_page`) that hosts the
+  full rule manager, so rules can be edited without leaving DevTools.
+
 ### Manifest
 
 - Remove the unused `webNavigation` permission.
+- Add `devtools_page`.
 - Bump version to 1.4.0.
