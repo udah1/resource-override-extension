@@ -4,7 +4,7 @@
 A modern, Manifest V3–compatible **Resource Override** extension for Chrome.  
 Redirect requests, mock responses (JSON/JS/CSS), modify response headers, inject JS/CSS, and control behavior per-rule with wildcards or regex — all with a clean, friendly UI.
 
-> Originally created by **Annie Rosh** with **OpenAI**. · Maintained by [**@udah1**](https://github.com/udah1).
+> Originally created by **Annie Rosh** with **OpenAI**. · Maintained by **Yehuda Huri** ([@udah1](https://github.com/udah1)).
 
 ---
 
@@ -98,7 +98,7 @@ You can also add **Exclusions** (comma-separated) that are applied as regex excl
 ## 🙌 Credits
 
 - **Original creator:** **Annie Rosh** (built with **OpenAI**) — the original *Open Resource Override (MV3)* concept and implementation.
-- **Author / maintainer:** [**@udah1**](https://github.com/udah1) — this repository, including additional features such as URL + request-body matching for POST/PUT/PATCH, the URL match tester, multi-theme UI, and the redesigned options/popup.
+- **Author / maintainer:** **Yehuda Huri** ([@udah1](https://github.com/udah1)) — this repository, including additional features such as URL + request-body matching for POST/PUT/PATCH, the URL match tester, multi-theme UI, and the redesigned options/popup.
 
 Built as a modern successor to the classic “Resource Override” idea for today’s MV3 world.
 
