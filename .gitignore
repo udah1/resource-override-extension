@@ -7,3 +7,6 @@ _metadata/
 # Editor
 .cursor/
 .vscode/
+
+# Build output
+dist/
