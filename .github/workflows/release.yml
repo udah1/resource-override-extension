@@ -14,6 +14,11 @@ on:
         description: "Publish even if the version didn't change"
         type: boolean
         default: false
+      target:
+        description: "Which store(s) to publish to"
+        type: choice
+        default: both
+        options: [both, chrome, edge]
 
 permissions:
   contents: write   # needed to create a GitHub Release
@@ -70,16 +75,20 @@ jobs:
     env:
       HAS_CHROME: ${{ secrets.CHROME_CLIENT_ID != '' }}
       HAS_EDGE: ${{ secrets.EDGE_CLIENT_ID != '' }}
+      # Manual runs can target one store; push/auto runs target both.
+      TARGET: ${{ github.event.inputs.target || 'both' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Build ZIP
         run: bash package.sh
 
-      # Each store step is gated on its secrets and won't fail the whole run, so one
-      # store being unconfigured or rejecting the upload never blocks the other.
+      # Each store step is gated on its secrets + the chosen target, and won't fail the
+      # whole run, so one store being unconfigured / in-review / rejected never blocks
+      # the other. Use the "target" input to publish to just one store (e.g. when the
+      # other is still in review).
       - name: Publish to Chrome Web Store
-        if: env.HAS_CHROME == 'true'
+        if: env.HAS_CHROME == 'true' && (env.TARGET == 'both' || env.TARGET == 'chrome')
         continue-on-error: true
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
@@ -89,10 +98,10 @@ jobs:
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
 
-      # Edge Add-ons. Runs only once EDGE_* secrets are set (account still verifying).
+      # Edge Add-ons.
       # Product ID: 0683f83c-0e7e-4085-b6e7-14b02d74832d
       - name: Publish to Edge Add-ons
-        if: env.HAS_EDGE == 'true'
+        if: env.HAS_EDGE == 'true' && (env.TARGET == 'both' || env.TARGET == 'edge')
         continue-on-error: true
         uses: wdzeng/edge-addon@v2.1.1
         with:
