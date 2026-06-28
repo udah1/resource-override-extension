@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.1]
+
+- Add the project's GitHub repository as `homepage_url` in the manifest (shown as the
+  store/`chrome://extensions` support link) and as **GitHub** / **Report an issue**
+  links in the options footer.
+- Credit the original [Resource Override](https://github.com/kylepaulsen/ResourceOverride)
+  by Kyle Paulsen as inspiration in the README.
+
 ## [1.5.0]
 
 - Rename the extension to **Resource Override Pro** (manifest name, toolbar title,

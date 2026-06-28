@@ -130,6 +130,8 @@ section{ background:var(--surface); border:1px solid var(--border); border-radiu
 footer{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:14px 22px; border-top:1px solid var(--border); background:var(--surface); }
 footer small{ color:var(--muted-2); font-size:11.5px; max-width:105ch; line-height:1.6; text-wrap:pretty; }
 footer .credit{ color:var(--muted-2); font-size:12px; }
+footer .credit a{ color:var(--accent, currentColor); text-decoration:none; }
+footer .credit a:hover{ text-decoration:underline; }
 code{ font-family:var(--font-mono); font-size:.92em; background:var(--bg-2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
 
 @media (max-width:900px){
