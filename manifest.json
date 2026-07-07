@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Resource Override Pro",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Redirect or mock requests (URL\u2192URL or URL\u2192text), modify headers, and inject JS/CSS. MV3-compatible alternative to Resource Override.",
   "homepage_url": "https://github.com/udah1/resource-override-extension",
   "permissions": [

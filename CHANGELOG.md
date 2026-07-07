@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.2]
+
+- New rules are now added to the top of the rule list instead of the bottom.
+
 ## [1.5.1]
 
 - Add the project's GitHub repository as `homepage_url` in the manifest (shown as the

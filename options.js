@@ -420,7 +420,7 @@ els.form.addEventListener("submit", async (e) => {
     desc.inject = { body: els.injectBody.value };
   }
   const idx = state.rules.findIndex(r => r.id === id);
-  if (idx >= 0) { state.rules[idx] = desc; } else { state.rules.push(desc); }
+  if (idx >= 0) { state.rules[idx] = desc; } else { state.rules.unshift(desc); }
   // Stay on the current rule after saving (don't reset to "Add Rule").
   els.ruleId.value = id;
   els.editorTitle.textContent = "Edit Rule";
