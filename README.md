@@ -8,6 +8,11 @@ Redirect requests, mock responses (JSON/JS/CSS), modify response headers, inject
 
 > 🔒 Privacy: this extension collects no data and stores all rules locally. See [PRIVACY.md](PRIVACY.md).
 
+## 📥 Get the extension
+
+- **Chrome Web Store:** [Resource Override Pro](https://chromewebstore.google.com/detail/resource-override-pro/namfjahinpffehdannbnpdjdjkkkchjg)
+- **Microsoft Edge Add-ons:** [Resource Override Pro](https://microsoftedge.microsoft.com/addons/detail/resource-override-pro/mjclfchbnajhhhefinedffgiaabkglhf)
+
 ---
 
 ## ✨ Features
@@ -29,7 +34,7 @@ Redirect requests, mock responses (JSON/JS/CSS), modify response headers, inject
 
 ---
 
-## 🚀 Install (Developer Mode)
+## 🚀 Install (Developer Mode / from source)
 
 1. Download the latest zip and extract the folder `open-resource-override-mv3`.
 2. Open **`chrome://extensions`** → enable **Developer mode** (top-right).
