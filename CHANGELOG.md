@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.3]
+
+- Remove the unused `tabs` permission. Tab reload (popup) and rule-update
+  notifications to background tabs already work via `host_permissions`
+  (`<all_urls>`) and the content script, so no functionality is lost.
+
 ## [1.5.2]
 
 - New rules are now added to the top of the rule list instead of the bottom.
